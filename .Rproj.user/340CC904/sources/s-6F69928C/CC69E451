@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1582540419610.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "CC69E451",
+    "lastKnownWriteTime" : 1582633091,
+    "last_content_update" : 1582633091368,
+    "path" : "~/Documents/lshtm/hospitalCapacity/simulate_epidemic.R",
+    "project_path" : "simulate_epidemic.R",
+    "properties" : {
+        "cursorPosition" : "49,0",
+        "scrollLine" : "33"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

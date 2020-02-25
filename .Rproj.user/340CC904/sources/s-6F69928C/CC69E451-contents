@@ -1,0 +1,73 @@
+library(deSolve)
+
+
+sir_equations <- function(time, variables, parameters) {
+  with(as.list(c(variables, parameters)), {
+    dS <- -r0*gamma*(S*I)/n
+    dI <- r0*gamma*(S*I)/n - gamma*I
+    dR <- gamma*I
+    return(list(c(dS, dI, dR)))
+  })
+}
+
+mean_infectious_period <- 3 # days
+r0_global    <- 3
+gamma_global <- 1/mean_infectious_period
+n_global     <- 1000
+print(gamma_global)
+
+
+parameters_values <- c(
+  r0 = r0_global,        # average number of secondary infectious (/person)
+  gamma  = gamma_global, # infectious contact rate (/person/day)
+  n = 1000
+)
+
+
+
+initial_values <- c(
+  S = 999,  # number of susceptibles at time = 0
+  I =   1,  # number of infectious at time = 0
+  R =   0   # number of recovered (and immune) at time = 0
+)
+
+max_days <- 28
+timeStep <- 0.1
+time_values <- seq(0, max_days, timeStep) # days
+
+
+sir_values_1 <- ode(
+  y = initial_values,
+  times = time_values,
+  func = sir_equations,
+  parms = parameters_values 
+)
+
+
+
+sir_values_1 <- as.data.frame(sir_values_1)
+incidenceDF <- data.frame(time = sir_values_1$time, 
+                          incidence = ((sir_values_1$S*sir_values_1$I)/n_global)*gamma_global*r0_global)
+
+
+
+#incidenceStoch <- sapply(incidenceDF$incidence, function(lambda) rpois(1,lambda))
+#incidenceStochDF <- data.frame(time = sir_values_1$time, 
+#                          incidence = incidenceStoch)
+
+
+#with(incidenceDF, {
+#  #plotting the time series of susceptibles:
+#  plot(time, incidence, type = "l", col = "blue",
+#       xlab = "time (days)", ylab = "incidence of cases")
+#})
+
+
+#prevalenceStoch <- sapply(prevalenceDF$prevalence, function(lambda) rpois(1,lambda))
+
+#prevalenceStochMean <- NA
+#for(i in 0:(max_days - 1))
+#{
+#  prevalenceStochMean[i + 1] <- as.vector(mean(prevalenceStoch[((i)*(1/timeStep)):((i + 1)*(1/timeStep))]))
+#}
+

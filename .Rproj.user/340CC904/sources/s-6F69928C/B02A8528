@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1582540420116.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2518513981",
+    "id" : "B02A8528",
+    "lastKnownWriteTime" : 1582633915,
+    "last_content_update" : 1582633915246,
+    "path" : "~/Documents/lshtm/hospitalCapacity/simulate_ICU_capacity.R",
+    "project_path" : "simulate_ICU_capacity.R",
+    "properties" : {
+        "cursorPosition" : "16,44",
+        "scrollLine" : "10"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

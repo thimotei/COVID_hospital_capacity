@@ -1,0 +1,96 @@
+library(deSolve)
+
+source("simulate_epidemic.R")
+
+# the incidence data must be interpolated to be used as a time-varying input in the dynamical system
+incidenceFun <- approxfun(incidenceDF$time, incidenceDF$incidence, method = "constant")
+
+# we have built in stochasicity if we think it is necessary further down the line. The system is deterministic
+# by default for simplicity
+
+#incidenceStochFun <- approxfun(incidenceStochDF$time, incidenceStochDF$incidence, method = "constant")
+
+# defining the system of ODEs describing the dynamics ofthe demands on a hospital during a COVID-19 epidemic
+icu_capacity_equations <- function(time, variables, parameters, input) {
+  with(as.list(c(variables, parameters)), {
+    import <- input(time) # this is a time-varying input, where the incidence case curve is fed into the system
+    dW     <- b1*import - b2*W - mu1*W - b3*
+    dIcu   <- b2*W - mu2*b3*Icu - b4*(1 - mu2)*Icu
+    dD     <- (mu1+mu2)*b3*Icu
+    dR     <- b4*(1 - (mu1 + mu2))*Icu
+    return(list(c(dW, dIcu, dD, dR)))
+  })
+}
+
+# defining the parameters - each is described with its own comment
+parameters_values_Icu <- c(
+  b1  = 0.5, # rate (per unit time) that cases are admitted to the ward 
+  b2  = 0.2, # rate (per unit time) that cases are transferred from the ward to the ICU
+  b3  = 0.3, # rate (per unit time) that individuals in the ICU die
+  b4  = 0.2, # rate (per unit time) that individuals in the ICU recover
+  mu1 = 0.1,
+  mu2 = 0.5
+)
+
+initial_values_Icu <- c(
+  W   = 2,  
+  Icu = 0,  
+  D   = 0,
+  R   = 0
+)
+
+time_values <- seq(0, 28, 0.01) # days
+
+
+Icu_values_1 <- ode(
+  y = initial_values_Icu,
+  times = time_values,
+  func = icu_capacity_equations,
+  parms = parameters_values_Icu,
+  input = incidenceFun
+)
+
+
+Icu_values_1 <- as.data.frame(Icu_values_1)
+
+# adding stochasticity, by assuming the waiting time between each event is exponentially distributed,
+# meaning each variable is now a Poisson process
+
+#W_stoch   <- sapply(Icu_values_1$W,   function(lambda) rpois(1,lambda))
+#Icu_stoch <- sapply(Icu_values_1$Icu, function(lambda) rpois(1,lambda))
+#D_stoch   <- sapply(Icu_values_1$D,   function(lambda) rpois(1,lambda))
+#R_stoch   <- sapply(Icu_values_1$R,   function(lambda) rpois(1,lambda))
+
+Icu_values_1 <- data.frame(time = Icu_values_1$time,
+                                 W    = W,
+                                 Icu  = Icu,
+                                 D    = D_stoch,
+                                 R    = R_stoch)
+
+
+Icu_day_means <- matrix(data = NA, nrow = max_days, ncol = 4)
+for(i in 0:(max_days - 1))
+{
+  Icu_day_means[i + 1,] <- as.vector(colMeans(Icu_values_1[((i)*100):((i + 1)*100),2:5]))
+}
+
+Icu_day_meansDF <- data.frame(time = 0:(max_days - 1), 
+                              W = Icu_day_means[,1],
+                              Icu = Icu_day_means[,2],
+                              D = Icu_day_means[,3],
+                              R = Icu_day_means[,4])
+
+
+with(Icu_values_1, {
+  # plotting the time series of susceptibles:
+  plot(time, W, type = "l", col = "blue",
+       xlab = "time (days)", ylab = "number of people")
+  # adding the time series of infectious:
+  lines(time, Icu, col = "red")
+  # adding the time series of recovered:
+  lines(time, D, col = "green")
+  # adding incidence
+  lines(time, R, col = rgb(0.8, 0.2, 0.6))
+  # plotting incidence
+  lines(incidenceDF$time, incidenceFun(incidenceDF$time), col = rgb(0.3, 0.9, 0.9))
+})
